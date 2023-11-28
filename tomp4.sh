@@ -1,8 +1,4 @@
 #!/bin/bash
-
-nbimages=$(find . -iname \*.png | wc -l)
-framerate=30
-
 basefolder="$PWD"
 parentFolder=$(dirname $basefolder)
 localconfigfolder="$basefolder/.config"
@@ -15,6 +11,8 @@ outputfile="output.$videoext"
 outrofile="outro.$videoext"
 introfile="intro.$videoext"
 vfile="vfile.$videoext"
+
+finaltimelapse="timelapse.mp4"
 
 mkdir -p $localconfigfolder
 
@@ -32,13 +30,18 @@ getConfigValue () {
     cat $localconfigfile
 }
 
-
 resultfolder=$(getConfigValue targetpath "$basefolder/result")
-music=$(getConfigValue music "$parentFolder/musics/alexander-nakarada-forest-walk.mp3")
+music=$(getConfigValue music "$parentFolder/musics/ethereal88-hopes-and-dreams.mp3")
 outrosize=$(getConfigValue outrosize 5 )
+
+
 
 touch $logfilename
 mkdir -p $resultfolder
+
+nbimages=$(find $resultfolder -iname \*.png | wc -l)
+framerate=30
+
 
 d=$(ffmpeg -i $music 2>&1 | grep "Duration" | cut -d ',' -f1 | cut -d ' ' -f4)
 
@@ -54,19 +57,19 @@ customlog "localconfigfolder $localconfigfolder"
 customlog "$nbimages in $soundduration seconds ($h:$m:$s)"
 customlog "video $vduration seconds + outro $outrosize seconds"
 
-
 rm $resultfolder/$basefile
+rm $resultfolder/$finaltimelapse
 rm $resultfolder/$outputfile
 rm $temptimedfile
 rm $outrofile
 rm $vfile
 
 # make outro freeze frame
-ffmpeg -framerate $framerate  -loop 1 -i "$(find *.png | tail -n 1)" -t $outrosize \
+ffmpeg -framerate $framerate  -loop 1 -i "$(find $resultfolder/*.png | tail -n 1)" -t $outrosize \
     -s:v 1440x1080 -c:v prores -profile:v 3 -pix_fmt yuv422p10 $outrofile
 
 # make timelapse video (1 frame per image)
-ffmpeg -framerate $framerate -pattern_type glob -i  '*.png' \
+ffmpeg -framerate $framerate -pattern_type glob -i  "$resultfolder/*.png" \
    -s:v 1440x1080 -c:v prores -profile:v 3 -pix_fmt yuv422p10 $resultfolder/$basefile
 
 # adapt timelapse video to audio track
@@ -82,3 +85,6 @@ ffmpeg -f concat -safe 0  -i <(echo "$mergelist") -vcodec copy -acodec copy $tem
 
 # merge audio and video
 ffmpeg -i $temptimedfile -i $music -c copy -map 0:v:0 -map 1:a:0 -shortest $resultfolder/$outputfile
+
+# convert final video to mp4
+ffmpeg -i $resultfolder/$outputfile -q:v 0 $resultfolder/$finaltimelapse
