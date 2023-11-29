@@ -87,4 +87,4 @@ ffmpeg -f concat -safe 0  -i <(echo "$mergelist") -vcodec copy -acodec copy $tem
 ffmpeg -i $temptimedfile -i $music -c copy -map 0:v:0 -map 1:a:0 -shortest $resultfolder/$outputfile
 
 # convert final video to mp4
-ffmpeg -i $resultfolder/$outputfile -q:v 0 $resultfolder/$finaltimelapse
+ffmpeg -i $resultfolder/$outputfile -c:v libx264 -c:a aac -vf format=yuv420p -movflags +faststart $resultfolder/$finaltimelapse
