@@ -2,5 +2,3 @@
 .md5base
 *.tar.gz
 !*.sh
-!musics/*.mp3
-
