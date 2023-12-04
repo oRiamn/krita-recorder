@@ -66,11 +66,11 @@ rm $vfile
 
 # make outro freeze frame
 ffmpeg -framerate $framerate  -loop 1 -i "$(find $resultfolder/*.png | tail -n 1)" -t $outrosize \
-    -s:v 1440x1080 -c:v prores -profile:v 3 -pix_fmt yuv422p10 $outrofile
+    -c:v prores -profile:v 3 -pix_fmt yuv422p10 $outrofile
 
 # make timelapse video (1 frame per image)
 ffmpeg -framerate $framerate -pattern_type glob -i  "$resultfolder/*.png" \
-   -s:v 1440x1080 -c:v prores -profile:v 3 -pix_fmt yuv422p10 $resultfolder/$basefile
+    -c:v prores -profile:v 3 -pix_fmt yuv422p10 $resultfolder/$basefile
 
 # adapt timelapse video to audio track
 ffmpeg -i $resultfolder/$basefile -filter:v "setpts=($vduration/$nbimages)*N/TB" -r $nbimages/$vduration -an $vfile
