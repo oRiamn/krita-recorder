@@ -1,5 +1,10 @@
 #!/bin/bash
 
+musicpath=$PWD/musics
+
+mkdir -p $musicpath
+
+
 dlcredits () {
     
     page=$(curl  dlcredits https://www.free-stock-music.com/$1.html)
@@ -10,7 +15,7 @@ dlcredits () {
     | sed 's/<br\/>/\
     /g' | sed -e 's/<[^>]*>//g' \
     | sed -e 's/^[ \t]*//' \
-    | sed -r '/^\s*$/d' > $PWD/musics/$1.mp3.credit
+    | sed -r '/^\s*$/d' > $musicpath/$1.mp3.credit
     
     echo "$page" \
     | sed -n "/class='trackDetailsCont'/,/<\/span>/p" \
@@ -19,7 +24,7 @@ dlcredits () {
     | cut -d '|' -f1 \
     | head -n 1 \
     | sed -e 's/^[ \t]*//' \
-    | sed -e 's/^/Title:/;' > $PWD/musics/$1.mp3.info
+    | sed -e 's/^/Title:/;' > $musicpath/$1.mp3.info
     
     echo "$page" \
     |  sed -n "/<div class='trackArtistPropertiesCont'>/,/<\/div>/p" \
@@ -29,14 +34,13 @@ dlcredits () {
     | sed -e 's/: /:/g' \
     | sed -e 's/^[ \t]*//' \
     | sed -r '/^\s*$/d' \
-    | grep -v playlist >> $PWD/musics/$1.mp3.info
+    | grep -v playlist >> $musicpath/$1.mp3.info
 }
 
 
 while IFS="" read -r p || [ -n "$p" ]
-do
-    
-    trackfile=$PWD/musics/$p.mp3
+do  
+    trackfile=$musicpath/$p.mp3
     if [ ! -f $trackfile ]
     then
         dlcredits $p
