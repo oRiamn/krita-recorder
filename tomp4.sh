@@ -64,18 +64,27 @@ rm $temptimedfile
 rm $outrofile
 rm $vfile
 
+
+lastimage=$(find $resultfolder/*.png | tail -n 1)
+
+customlog "make outro freeze frame with $lastimage in $outrofile" 
+
 # make outro freeze frame
-ffmpeg -framerate $framerate  -loop 1 -i "$(find $resultfolder/*.png | tail -n 1)" -t $outrosize \
+ffmpeg -framerate $framerate  -loop 1 -i $lastimage -t $outrosize \
     -c:v prores -profile:v 3 -pix_fmt yuv422p10 $outrofile
 
+
+customlog "timelapse video with $nbimages (1 frame per image)" 
 # make timelapse video (1 frame per image)
 ffmpeg -framerate $framerate -pattern_type glob -i  "$resultfolder/*.png" \
     -c:v prores -profile:v 3 -pix_fmt yuv422p10 $resultfolder/$basefile
 
+customlog "adapt timelapse video to audio track ($h:$m:$s)" 
 # adapt timelapse video to audio track
 ffmpeg -i $resultfolder/$basefile -filter:v "setpts=($vduration/$nbimages)*N/TB" -r $nbimages/$vduration -an $vfile
 
 
+customlog "merge timelapse and freezeframe to $temptimedfile" 
 # merge timelapse and freezeframe
 mergelist="
 file '$basefolder/$vfile'
@@ -83,8 +92,11 @@ file '$basefolder/$outrofile'
 "
 ffmpeg -f concat -safe 0  -i <(echo "$mergelist") -vcodec copy -acodec copy $temptimedfile
 
+
+customlog "merge audio and video to $resultfolder/$outputfile" 
 # merge audio and video
 ffmpeg -i $temptimedfile -i $music -c copy -map 0:v:0 -map 1:a:0 -shortest $resultfolder/$outputfile
 
+customlog "create mp4 video from result to $resultfolder/$finaltimelapse" 
 # convert final video to mp4
 ffmpeg -i $resultfolder/$outputfile -c:v libx264 -c:a aac -vf format=yuv420p -movflags +faststart $resultfolder/$finaltimelapse
