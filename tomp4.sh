@@ -81,7 +81,7 @@ ffmpeg -framerate $framerate -pattern_type glob -i  "$resultfolder/*.png" \
 
 customlog "adapt timelapse video to audio track ($h:$m:$s)" 
 # adapt timelapse video to audio track
-ffmpeg -i $resultfolder/$basefile -filter:v "setpts=($vduration/$nbimages)*N/TB" -r $nbimages/$vduration -an $vfile
+ffmpeg -i $resultfolder/$basefile -filter:v "setpts=($vduration/$nbimages)*N/TB" -r $framerate -an $vfile 
 
 
 customlog "merge timelapse and freezeframe to $temptimedfile" 
