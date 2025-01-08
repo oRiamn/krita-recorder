@@ -74,5 +74,8 @@ for filename in *.png; do
 done
 
 lastimage=$(find *.png | tail -n 1)
-tar -zcvf $resultfolder/$(date +%F_%T).tar.gz ../$(basename $PWD)
+
+temptarfile="$(mktemp -d)/$(date +%F_%T).tar.gz"
+tar -zcvf $temptarfile ../$(basename $PWD)
+mv $temptarfile $resultfolder
 find *.png | grep -v "$lastimage" | xargs -d '\n' rm -f --
